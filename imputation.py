@@ -21,6 +21,20 @@ def median_imputation(feature: str, df: pd.DataFrame, df2: pd.DataFrame = None):
         df[feature].fillna(common_val, inplace=True)
 
 
+def new_median_imputation(feature: str, df: pd.DataFrame, df2: pd.DataFrame):
+    # complete the missing values of a feature based on the avg of what all the other samples that voted the same
+    if df[feature].dtype == float:
+        ss = df2[feature].mean()
+        df.loc[ df[feature].isnull() , feature ] = ss
+    else:
+        # complete the missing categorical value with the category most samples have
+        if df2 is None:
+            common_val = df[feature].value_counts().idxmax()
+        else:
+            common_val = df2[feature].value_counts().idxmax()
+        df[feature].fillna(common_val, inplace=True)
+
+
 # given the index of a sample in a dataset, a feature and the dataset(df) return the index of the sample closest to
 # the given sample in the dataset on the given feature, if the second dataset is given too the closest sample
 # will be searched on that dataset
@@ -98,3 +112,13 @@ def imputation(dataset, dataset2=None):
             print(idx, col)
             related_features_imputation(idx, dataset, dataset2)
             median_imputation(col, dataset, dataset2)
+
+
+def new_imputation(dataset, dataset2):
+    has_na = dataset.isna().any()
+    # do a median_imputation
+    for idx, col in enumerate(dataset):
+        if has_na[col]:
+            print(idx, col)
+            related_features_imputation(idx, dataset, dataset2)
+            new_median_imputation(col, dataset, dataset2)

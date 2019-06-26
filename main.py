@@ -1,9 +1,13 @@
-import generative
 import sklearn
 import pandas as pd
 import numpy as np
-import clustering
-from sklearn.metrics import davies_bouldin_score, completeness_score
+import cleansing
+from imputation import *
+from standartisation import *
+from wrappers import *
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from model_selection import target_features_split
 
 
 def show_col_parties(coalition: pd.Series, labels: pd.Series):
@@ -17,46 +21,46 @@ def show_col_parties(coalition: pd.Series, labels: pd.Series):
 
 
 def main():
-    train = pd.read_csv('train_processed.csv')
+    train = pd.concat([pd.read_csv('train_processed.csv'), pd.read_csv('test_processed.csv')], ignore_index=True)
     valid = pd.read_csv('valid_processed.csv')
-    test = pd.read_csv('test_processed.csv')
 
-    data = pd.concat([train, valid, test], ignore_index=True)
-    X, Y = generative.target_features_split(data, "Vote")
+    full_train = pd.concat([pd.read_csv('full_train.csv'), pd.read_csv('full_test.csv')], ignore_index=True)
 
-    # cluster models
-    print('Doing clustering coalitions')
-    cluster_models = clustering.get_clustering(X, Y)
-    cluster_coalitions = clustering.create_cluster_coalitions(cluster_models, X, Y, threshold=0.3)
+    features = train.columns.tolist()
+    selected_features = ["Avg_environmental_importance", "Avg_government_satisfaction", "Avg_education_importance",
+                         "Avg_monthly_expense_on_pets_or_plants", "Avg_Residancy_Altitude", "Yearly_ExpensesK",
+                         "Weighted_education_rank", "Number_of_valued_Kneset_members"]
+    features = [feat for feat in features if feat.startswith("Issue")] + selected_features
+    test = pd.read_csv("ElectionsData_Pred_Features.csv")
+    test = pd.DataFrame(cleansing.cleanse(test))
+    id_Num = test["IdentityCard_Num"]
+    new_imputation(test, full_train)
+    scaler = DFScaler(test, selected_features)
+    test = scaler.scale(test)
+    test = test[features]
 
-    # generative_models
-    print('Doing generative coalitions')
-    gen_models = generative.train_generative(data)
-    gen_coalitions = generative.create_gen_coalitions(gen_models, X, Y)
+    x_train, y_train = target_features_split(train, "Vote")
 
-    coalitions = cluster_coalitions + gen_coalitions
+    svc = SVC(C=7.70625, class_weight='balanced', degree=5, gamma='auto', kernel='poly', probability=True, tol=0.33618)
+    model = ElectionsResultsWrapper(svc)
+    model.fit(x_train, y_train)
 
-    model_names = ['MiniBatchKMeans', 'BayesianGMM', 'LDA', 'QDA']
-    for model, name in zip(cluster_models + gen_models, model_names):
-        clustering.show_clusters(X, model, f'{name} Clusters In 3D PCA Values')
+    election_results = model.predict(test)
+    election_winner = election_results.idxmax()
+    print(election_results)
+    print("the winner:", election_winner)
 
-    # check how good the coalitions are
-    scores = []
-    for coalition, name in zip(coalitions, model_names):
-        col = Y.isin(coalition).astype(np.int)
+    clf = RandomForestClassifier(bootstrap=False, min_samples_split=10, min_samples_leaf=4, criterion='gini',
+                                 max_depth=20, max_features='log2', n_estimators=1738, class_weight='balanced')
+    clf.fit(x_train, y_train)
+    votes_predictions = clf.predict(test)
+    results = pd.DataFrame()
+    results["IdentityCard_Num"] = id_Num
+    results["PredictVote"] = votes_predictions
 
-        scores.append(davies_bouldin_score(X, col))
-        print('')
-        print('=========================================')
-        print(f'{name} Coalition')
-        print(f'Score is {scores[-1]}')
-        print(f'Completeness is {completeness_score(Y, col)}')
-        show_col_parties(pd.Series(col), Y)
-        clustering.show_labels(X, pd.Series(col), f'{name} Coalition')
-
-    best_idx = np.argmin(scores)
-    print(f'The best model is {model_names[best_idx]}')
-    # pd.Series(coalitions[best_idx]).to_csv('coalition.csv', index=False)
+    results.to_csv("election_results.csv", index=False)
+    test["Vote"] = results["PredictVote"]
+    test.to_csv("new_test_processed.csv", index=False)
 
 
 if __name__ == '__main__':

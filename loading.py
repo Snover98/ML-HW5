@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 
 # load a dataset from a csv file to a panda dataframe
 def load_csv():
-    data = pd.read_csv("ElectionsData.csv")
+    data = pd.read_csv("ElectionsData_Pred_Features.csv")
     return data
 
 

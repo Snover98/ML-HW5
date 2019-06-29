@@ -30,11 +30,6 @@ def create_cluster_coalitions(models: list, data: pd.DataFrame, labels: pd.Serie
         for party in labels[col == col_number].unique():
             col_counts[party] = col_party_voters[party]
 
-        print('Coaltion Cluster:')
-        print(col_counts.sort_index())
-        print('Actual:')
-        print(labels.value_counts().sort_index())
-
         col_parties = labels.unique()[col_counts.sort_index() >= labels.value_counts().sort_index() * col_thresh]
 
         coalitions.append(col_parties)
@@ -63,11 +58,11 @@ def learn_clusters(features: pd.DataFrame, labels: pd.Series, clustering_methods
         'bootstrap': False,
         'class_weight': 'balanced',
         'criterion': 'gini',
-        'max_depth': 20,
-        'max_features': 'log2',
+        'max_depth': 60,
+        'max_features': 'sqrt',
         'min_samples_leaf': 4,
         'min_samples_split': 10,
-        'n_estimators': 1738,
+        'n_estimators': 1027,
         'warm_start': False
     }
 

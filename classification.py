@@ -111,7 +111,7 @@ def find_best_models(train, valid, search_hyper_params=True, verbose=False):
     print(f'seed is {seed}')
     print('')
 
-    n_iter = 10
+    n_iter = 15
 
     random_forest_params = {
         'n_estimators': RandIntMult(low=0.5, high=20.0, mult=100),

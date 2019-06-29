@@ -36,7 +36,7 @@ def data_sets_preparation(load_from_csv=False):
 
 
 def main():
-    train, valid, test = data_sets_preparation(True)
+    train, valid, test = data_sets_preparation(False)
 
     features = train.columns.tolist()
     selected_features = ["Avg_environmental_importance", "Avg_government_satisfaction", "Avg_education_importance",
@@ -44,7 +44,7 @@ def main():
                          "Weighted_education_rank", "Number_of_valued_Kneset_members"]
     features = [feat for feat in features if feat.startswith("Issue")] + selected_features
 
-    best_models = find_best_models(train, valid, verbose=True, search_hyper_params=False)
+    best_models = find_best_models(train, valid, verbose=True, search_hyper_params=True)
     use_estimators(best_models, train, valid, test)
 
     results = pd.DataFrame()

@@ -23,7 +23,7 @@ def main():
     # cluster models
     print('Doing clustering coalitions')
     cluster_models = clustering.get_clustering(X, y)
-    cluster_coalitions = clustering.create_cluster_coalitions(cluster_models, X, y, threshold=0.3)
+    cluster_coalitions = clustering.create_cluster_coalitions(cluster_models, X, y, threshold=0.3, col_thresh=0.75)
 
     # generative_models
     print('Doing generative coalitions')

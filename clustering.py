@@ -11,7 +11,8 @@ from sklearn.mixture import BayesianGaussianMixture
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def create_cluster_coalitions(models: list, data: pd.DataFrame, labels: pd.Series, threshold: float = 0.3):
+def create_cluster_coalitions(models: list, data: pd.DataFrame, labels: pd.Series, threshold: float = 0.3,
+                              col_thresh: float = 0.75):
     coalitions = []
     for model in models:
         probs = model.predict_proba(data)
@@ -29,8 +30,12 @@ def create_cluster_coalitions(models: list, data: pd.DataFrame, labels: pd.Serie
         for party in labels[col == col_number].unique():
             col_counts[party] = col_party_voters[party]
 
-        # parties = pd.Series()
-        col_parties = labels.unique()[col_counts.sort_index() >= labels.value_counts().sort_index() * 0.75]
+        print('Coaltion Cluster:')
+        print(col_counts.sort_index())
+        print('Actual:')
+        print(labels.value_counts().sort_index())
+
+        col_parties = labels.unique()[col_counts.sort_index() >= labels.value_counts().sort_index() * col_thresh]
 
         coalitions.append(col_parties)
     return coalitions

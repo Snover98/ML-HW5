@@ -21,9 +21,16 @@ def create_cluster_coalitions(models: list, data: pd.DataFrame, labels: pd.Serie
 
         col = pd.Series(col, index=labels.index)
         col_number = col.value_counts().idxmax()
+
+        col_counts = labels.value_counts().sort_index().copy()
+        col_counts *= 0
+
+        col_party_voters = labels[col == col_number].value_counts().sort_index()
+        for party in labels[col == col_number].unique():
+            col_counts[party] = col_party_voters[party]
+
         # parties = pd.Series()
-        col_parties = labels.unique()[
-            labels[col == col_number].value_counts().sort_index() >= labels.value_counts().sort_index() * 0.75]
+        col_parties = labels.unique()[col_counts.sort_index() >= labels.value_counts().sort_index() * 0.75]
 
         coalitions.append(col_parties)
     return coalitions
@@ -36,7 +43,6 @@ def get_clustering(features: pd.DataFrame, labels: pd.Series):
 
 
 def cluster_party(features_subset: pd.DataFrame, party: str, clustering_method):
-    print(f'Doing party {party}')
     clusters = clustering_method.fit_predict(features_subset)
     return party + pd.Series(clusters, index=features_subset.index).astype(str)
 

@@ -154,14 +154,17 @@ def use_estimators(best_estimators, train, valid, test):
 
     non_test_data = pd.concat((train, valid))
 
+    test_has_labels = 'Vote' in test.columns
+
     # data for the final classifier
     print('')
     print('============================================')
     best_normal.fit(*target_features_split(non_test_data, 'Vote'))
     test_pred = pd.Series(best_normal.predict(test[features]), index=test.index)
-    test_true = test['Vote']
-    parties = non_test_data['Vote'].unique()
-    plot_confusion_matrix(test_true, test_pred, parties)
+    if test_has_labels:
+        test_true = test['Vote']
+        parties = non_test_data['Vote'].unique()
+        plot_confusion_matrix(test_true, test_pred, parties)
     print('')
     test_pred.to_csv('test_predictions.csv', index=False)
 
@@ -169,33 +172,40 @@ def use_estimators(best_estimators, train, valid, test):
     print('============================================')
     best_election_win.fit(*target_features_split(non_test_data, 'Vote'))
     pred_election_winner = best_election_win.predict(test[features])
-    true_election_winner = test['Vote'].value_counts().idxmax()
-    print(f'The predicted elections winner is {pred_election_winner} and the actual winner is {true_election_winner}')
+    if test_has_labels:
+        true_election_winner = test['Vote'].value_counts().idxmax()
+        print(
+            f'The predicted elections winner is {pred_election_winner} and the actual winner is {true_election_winner}')
+    else:
+        print(f'The predicted elections winner is {pred_election_winner}')
+
     print('')
 
     # predict elections results
     print('============================================')
     best_election_res.fit(*target_features_split(non_test_data, 'Vote'))
-    pred_percentages = best_election_res.predict(train[features]) * 100
-    true_percentages = test['Vote'].value_counts() / len(test.index) * 100
+    pred_percentages = best_election_res.predict(test[features]) * 100
     print('The predicted distribution of votes across the parties is:')
     pprint(pred_percentages)
-    print('The true distribution of votes across the parties is:')
-    pprint(true_percentages[pred_percentages.index])
+    if test_has_labels:
+        true_percentages = test['Vote'].value_counts() / len(test.index) * 100
+        print('The true distribution of votes across the parties is:')
+        pprint(true_percentages[pred_percentages.index])
     print('')
 
     # predict likely voters
     print('============================================')
     best_likely_voters_model.fit(*target_features_split(non_test_data, 'Vote'))
     pred_likely_voters = best_likely_voters_model.predict(test[features])
-    actual_voters = likely_voters_series(
-        {party: test['Vote'].index[test['Vote'] == party] for party in non_test_data['Vote'].unique()})
+
     print('Predicted likely voter indices per party:')
     print_likely_voters(pred_likely_voters)
     print('')
-    print('Actual voter indices per party:')
-    print_likely_voters(actual_voters)
-    print('')
+    if test_has_labels:
+        actual_voters = likely_voters_series({party: test['Vote'].index[test['Vote'] == party] for party in parties})
+        print('Actual voter indices per party:')
+        print_likely_voters(actual_voters)
+        print('')
 
 
 def main():

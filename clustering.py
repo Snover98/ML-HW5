@@ -36,6 +36,7 @@ def get_clustering(features: pd.DataFrame, labels: pd.Series):
 
 
 def cluster_party(features_subset: pd.DataFrame, party: str, clustering_method):
+    print(f'Doing party {party}')
     clusters = clustering_method.fit_predict(features_subset)
     return party + pd.Series(clusters, index=features_subset.index).astype(str)
 

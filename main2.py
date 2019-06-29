@@ -18,17 +18,17 @@ def show_col_parties(coalition: pd.Series, labels: pd.Series):
 
 def main():
     data = pd.read_csv("new_test_processed.csv")
-    X, Y = generative.target_features_split(data, "Vote")
+    X, y = generative.target_features_split(data, "Vote")
 
     # cluster models
     print('Doing clustering coalitions')
-    cluster_models = clustering.get_clustering(X, Y)
-    cluster_coalitions = clustering.create_cluster_coalitions(cluster_models, X, Y, threshold=0.3)
+    cluster_models = clustering.get_clustering(X, y)
+    cluster_coalitions = clustering.create_cluster_coalitions(cluster_models, X, y, threshold=0.3)
 
     # generative_models
     print('Doing generative coalitions')
     gen_models = generative.train_generative(data)
-    gen_coalitions = generative.create_gen_coalitions(gen_models, X, Y)
+    gen_coalitions = generative.create_gen_coalitions(gen_models, X, y)
 
     coalitions = cluster_coalitions + gen_coalitions
 
@@ -39,15 +39,15 @@ def main():
     # check how good the coalitions are
     scores = []
     for coalition, name in zip(coalitions, model_names):
-        col = Y.isin(coalition).astype(np.int)
+        col = y.isin(coalition).astype(np.int)
 
         scores.append(davies_bouldin_score(X, col))
         print('')
         print('=========================================')
         print(f'{name} Coalition')
         print(f'Score is {scores[-1]}')
-        print(f'Completeness is {completeness_score(Y, col)}')
-        show_col_parties(pd.Series(col), Y)
+        print(f'Completeness is {completeness_score(y, col)}')
+        show_col_parties(pd.Series(col), y)
         clustering.show_labels(X, pd.Series(col), f'{name} Coalition')
 
     best_idx = np.argmin(scores)

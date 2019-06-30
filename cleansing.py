@@ -16,8 +16,13 @@ def change_categorials(df: pd.DataFrame):
                     }
     df.replace(cleanup_nums, inplace=True)
 
-    df = pd.get_dummies(df, columns=["Most_Important_Issue", "Main_transportation", "Occupation"],
-                        prefix=["Issue", "trans", "Occ"])
+    one_hot_feats = ["Most_Important_Issue", "Main_transportation", "Occupation"]
+    one_hot_prefixes = ["Issue", "trans", "Occ"]
+
+    one_hots, prefixes = zip(
+        *[(feat, prefix) for feat, prefix in zip(one_hot_feats, one_hot_prefixes) if feat in df.columns])
+
+    df = pd.get_dummies(df, columns=list(one_hots), prefix=list(prefixes))
 
     for col in df:
         if col == "Vote":

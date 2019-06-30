@@ -64,11 +64,11 @@ def close_nieg(sample_idx: int, feature: int, df: pd.DataFrame, df2: pd.DataFram
     return min_nigh
 
 
-# given a feature and a dataset imputates a missing value of the feature  on each sample on the dataset
+# given a feature and a dataset imputes a missing value of the feature  on each sample on the dataset
 # with the value of the closest sample on the feature most correlated to the given feature
-# on its value for the given feature, if there are no featuers strongly correlated to the given feature do nothing,
-# if example has no value on the mosr correlated feature we will check the next one and if there are no more we will
-# skip the example, given a second dataset we will imputate the data based on the second dataset examples
+# on its value for the given feature, if there are no features strongly correlated to the given feature do nothing,
+# if example has no value on the most correlated feature we will check the next one and if there are no more we will
+# skip the example, given a second dataset we will impute the data based on the second dataset examples
 def related_features_imputation(feature: int, df: pd.DataFrame, df2: pd.DataFrame = None):
     df_tag = (df if df2 is None else df2).dropna()
     df_tag = df_tag.drop(["Vote"], axis=1)
@@ -76,10 +76,10 @@ def related_features_imputation(feature: int, df: pd.DataFrame, df2: pd.DataFram
 
     feature -= 1
 
-    feat_names = list(df)
+    feat_names = list(df_tag)
 
     max_corr = [(i, mi_matrix[i][feature]) for i in range(mi_matrix.shape[0]) if
-                i != feature and df.dtypes[feat_names[i + 1]] == float and abs(mi_matrix[i][feature]) > 0.5]
+                i != feature and df.dtypes[feat_names[i]] == float and abs(mi_matrix[i][feature]) > 0.5]
 
     max_corr.sort(reverse=True, key=lambda tup: tup[1])
 

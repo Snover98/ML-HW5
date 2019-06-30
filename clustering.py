@@ -100,8 +100,8 @@ def show_labels(features: pd.DataFrame, y_pred: pd.Series, title: str):
     ax.set_title(title)
     ax.scatter(X[:, 0], X[:, 1], X[:, 2], s=10, color=colors[y_pred.values])
 
-    plt.xlim(-5, 5)
-    plt.ylim(-5, 5)
+    plt.xlim(0, 13)
+    plt.ylim(0, 3000)
     plt.xticks(())
     plt.yticks(())
     plt.show()

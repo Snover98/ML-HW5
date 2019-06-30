@@ -47,6 +47,19 @@ class RandIntMult:
         return np.around(state.uniform(low=self.low, high=self.high, size=self.size) * self.mult).astype(int)
 
 
+def plot_election_res_hist(hist):
+    parties = hist.index.values.astype(np.str)
+    colors = [party[:-1] for party in parties]
+    fig = plt.figure(figsize=(10, 5))
+    ax = fig.add_subplot(111)
+    ax.set_facecolor('black')
+    _, _, patches = ax.hist(parties, weights=hist.values, rwidth=0.5, align='left', bins=range(len(parties) + 1))
+    for i, (v, color) in enumerate(zip(hist.values, colors)):
+        ax.text(i - .3, v + .1, str(v)[:4] + '%', color='white', fontweight='bold')
+        patches[i].set_facecolor(color)
+    plt.show()
+
+
 def plot_confusion_matrix(y_true, y_pred, classes,
                           normalize=False,
                           title=None,
@@ -187,6 +200,7 @@ def use_estimators(best_estimators, train, valid, test):
     pred_percentages = best_election_res.predict(test[features]) * 100
     print('The predicted distribution of votes across the parties is:')
     pprint(pred_percentages)
+    plot_election_res_hist(pred_percentages)
     if test_has_labels:
         true_percentages = test['Vote'].value_counts() / len(test.index) * 100
         print('The true distribution of votes across the parties is:')

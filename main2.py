@@ -13,7 +13,7 @@ def show_col_parties(coalition: pd.Series, labels: pd.Series):
     print('Out of:')
     print(labels.value_counts().sort_index())
     print(f'The coalition parties are {labels[coalition == col_number].unique()}')
-    print(f'The Coalition has {100 * len(labels[coalition == col_number]) / len(coalition)}% of the votes')
+    print(f'The Coalition has {int(100*100*len(labels[coalition == col_number]) / len(coalition)) / 100}% of the votes')
 
 
 def main():
@@ -45,8 +45,8 @@ def main():
         print('')
         print('=========================================')
         print(f'{name} Coalition')
-        print(f'Score is {scores[-1]}')
-        print(f'Completeness is {completeness_score(y, col)}')
+        print(f'Score is {str(scores[-1])[:5]}')
+        print(f'Completeness is {str(completeness_score(y, col))[:4]}')
         show_col_parties(pd.Series(col), y)
         clustering.show_labels(X, pd.Series(col), f'{name} Coalition')
 
